@@ -1,6 +1,8 @@
 import functions_framework
 import random
 import json
+import os
+from flask import Flask, request, jsonify
 
 def generate_lotto_numbers():
     """
@@ -18,10 +20,13 @@ def generate_lotto_numbers():
     
     return selected_numbers
 
-@functions_framework.http
-def lotto_generator_mcp(request):
+# Cloud Run용 Flask 앱 생성
+app = Flask(__name__)
+
+@app.route('/', methods=['GET', 'OPTIONS'])
+def lotto_generator_mcp():
     """
-    Google Cloud Functions HTTP 트리거 함수
+    Cloud Run HTTP 엔드포인트
     로또 번호를 생성하고 JSON 형식으로 반환
     """
     # CORS 헤더 설정 (웹에서 호출 가능하도록)
@@ -38,7 +43,7 @@ def lotto_generator_mcp(request):
     
     # GET 요청만 허용
     if request.method != 'GET':
-        return (json.dumps({"error": "Method Not Allowed"}), 405, headers)
+        return jsonify({"error": "Method Not Allowed"}), 405
     
     try:
         # 로또 번호 생성
@@ -46,12 +51,24 @@ def lotto_generator_mcp(request):
         
         # JSON 응답 생성
         response_data = {"numbers": numbers}
-        response_json = json.dumps(response_data, ensure_ascii=False)
         
         # HTTP 200 상태 코드와 함께 JSON 응답 반환
-        return (response_json, 200, headers)
+        return jsonify(response_data), 200
         
     except Exception as e:
         # 에러 발생 시 500 에러 반환
         error_response = {"error": "로또 번호 생성 중 오류가 발생했습니다."}
-        return (json.dumps(error_response, ensure_ascii=False), 500, headers)
+        return jsonify(error_response), 500
+
+# Cloud Functions용 함수 (호환성 유지)
+@functions_framework.http
+def lotto_generator_mcp_functions(request):
+    """
+    Google Cloud Functions HTTP 트리거 함수 (호환성 유지)
+    """
+    return lotto_generator_mcp()
+
+if __name__ == '__main__':
+    # Cloud Run에서 실행될 때 포트 8080 사용
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port, debug=False)
