@@ -1,16 +1,17 @@
-# 행운의 로또 번호 생성기
+# 행운의 로또 번호 생성기 (GCP Cloud Functions)
 
-카카오톡 대화방에서 간단한 명령어로 로또 번호를 추천받을 수 있는 MCP 서버입니다.
+Google Cloud Functions를 사용하여 playMCP에 연동할 수 있는 로또 번호 생성기 API입니다.
 
 ## 기능
 
 - 1부터 45까지의 숫자 중 중복되지 않는 6개의 숫자를 무작위로 생성
 - 생성된 번호를 오름차순으로 정렬하여 반환
 - JSON 형식의 API 응답
+- CORS 지원으로 웹에서 직접 호출 가능
 
 ## API 엔드포인트
 
-### GET /generate
+### HTTP GET 요청
 
 로또 번호를 생성합니다.
 
@@ -21,38 +22,57 @@
 }
 ```
 
-## 로컬 실행
+## 로컬 테스트
 
 1. 의존성 설치:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. 서버 실행:
+2. Functions Framework로 로컬 실행:
 ```bash
-python app.py
+functions-framework --target=lotto_generator_mcp --source=main.py
 ```
 
 3. API 테스트:
 ```bash
-curl http://127.0.0.1:8000/generate
+curl http://127.0.0.1:8080
 ```
 
-## 배포
+## GCP 배포
 
-이 프로젝트는 Replit, Glitch, Heroku 등의 플랫폼에 배포할 수 있습니다.
+### 1. Google Cloud CLI 설치 및 설정
+```bash
+# gcloud CLI 설치 (macOS)
+brew install google-cloud-sdk
 
-### Replit 배포 방법
+# 인증
+gcloud auth login
 
-1. Replit에 새 프로젝트 생성
-2. 이 코드를 복사하여 붙여넣기
-3. "Run" 버튼 클릭
-4. 생성된 URL + `/generate`를 playMCP에 등록
+# 프로젝트 설정
+gcloud config set project YOUR_PROJECT_ID
+```
+
+### 2. Cloud Functions 배포
+```bash
+gcloud functions deploy lotto-generator-mcp \
+  --runtime python311 \
+  --trigger-http \
+  --allow-unauthenticated \
+  --source . \
+  --entry-point lotto_generator_mcp
+```
+
+### 3. 함수 URL 확인
+```bash
+gcloud functions describe lotto-generator-mcp --region=us-central1
+```
 
 ## playMCP 등록 정보
 
 - **MCP 이름**: 행운의 로또 번호 생성기
 - **MCP 설명**: 오늘의 행운을 시험해보세요! 버튼 하나로 간편하게 로또 추천 번호를 받을 수 있습니다.
+- **MCP Endpoint**: `https://us-central1-YOUR_PROJECT_ID.cloudfunctions.net/lotto-generator-mcp`
 - **대화 예시**: 
   - "로또 번호 추천해줘"
   - "로또 번호 생성"
