@@ -26,6 +26,40 @@ def generate_lotto_numbers():
     return selected_numbers
 
 class MCPHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        """GET 요청 처리 - MCP 프로토콜"""
+        if self.path == '/mcp':
+            # GET 요청의 경우 기본 tools/list 응답
+            response = {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "result": {
+                    "tools": [
+                        {
+                            "name": "generate_lotto",
+                            "description": "Generate lucky lotto numbers (6 numbers from 1 to 45)",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {},
+                                "required": []
+                            }
+                        }
+                    ]
+                }
+            }
+            
+            # 응답 전송
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+            self.end_headers()
+            self.wfile.write(json.dumps(response, ensure_ascii=False).encode())
+        else:
+            self.send_response(404)
+            self.end_headers()
+    
     def do_POST(self):
         """POST 요청 처리 - MCP 프로토콜"""
         if self.path == '/mcp':
@@ -41,7 +75,7 @@ class MCPHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
             self.send_header('Access-Control-Allow-Headers', 'Content-Type')
             self.end_headers()
             self.wfile.write(json.dumps(response, ensure_ascii=False).encode())
@@ -53,7 +87,7 @@ class MCPHandler(BaseHTTPRequestHandler):
         """OPTIONS 요청 처리 (CORS)"""
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
         self.end_headers()
     
