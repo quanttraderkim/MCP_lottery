@@ -5,8 +5,6 @@ FastMCP 프레임워크를 사용하여 MCP 스펙에 맞는 서버 구현
 """
 
 import random
-import json
-import asyncio
 from fastmcp import FastMCP
 
 # MCP 서버 인스턴스 생성
@@ -28,7 +26,7 @@ def generate_lotto_numbers():
     
     return selected_numbers
 
-@mcp.tool()
+@mcp.tool
 def generate_lotto() -> str:
     """
     로또 번호를 생성합니다.
@@ -40,7 +38,7 @@ def generate_lotto() -> str:
     numbers = generate_lotto_numbers()
     return f"오늘의 행운의 로또 번호: {', '.join(map(str, numbers))}"
 
-@mcp.tool()
+@mcp.tool
 def get_lotto_numbers() -> dict:
     """
     로또 번호를 JSON 형식으로 생성합니다.
@@ -51,12 +49,8 @@ def get_lotto_numbers() -> dict:
     numbers = generate_lotto_numbers()
     return {"numbers": numbers}
 
-async def main():
-    """메인 함수"""
+if __name__ == "__main__":
+    # MCP 서버 실행 (HTTP 전송 방식)
     import os
     port = int(os.environ.get('PORT', 8000))
-    await mcp.run(host='0.0.0.0', port=port)
-
-if __name__ == "__main__":
-    # MCP 서버 실행
-    asyncio.run(main())
+    mcp.run(transport="http", host="0.0.0.0", port=port, path="/mcp")
