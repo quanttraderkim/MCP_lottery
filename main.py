@@ -66,7 +66,7 @@ def lotto_generator_mcp():
 @functions_framework.http
 def lotto_generator_mcp_functions(request):
     """
-    Google Cloud Functions HTTP 트리거 함수 (MCP 프로토콜 지원)
+    Google Cloud Functions HTTP 트리거 함수 (playMCP 호환)
     """
     # CORS 헤더 설정
     headers = {
@@ -84,7 +84,7 @@ def lotto_generator_mcp_functions(request):
         # 로또 번호 생성
         numbers = generate_lotto_numbers()
         
-        # MCP 형식의 응답 생성
+        # playMCP가 기대하는 형식으로 응답
         if request.method == 'POST':
             # POST 요청의 경우 MCP 프로토콜 형식으로 응답
             mcp_response = {
